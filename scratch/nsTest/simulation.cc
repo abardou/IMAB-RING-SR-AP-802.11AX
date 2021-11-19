@@ -60,7 +60,7 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 			wifiPhy[i].Set("MaxSupportedTxSpatialStreams", UintegerValue(2));
 			wifiPhy[i].Set("MaxSupportedRxSpatialStreams", UintegerValue(2));
 			wifiPhy[i].Set("ChannelNumber", UintegerValue(channel));
-			// wifiPhy[i].Set("RxSensitivity", DoubleValue(std::get<0>(defaultConf[i])));
+			wifiPhy[i].Set("RxSensitivity", DoubleValue(std::get<0>(defaultConf[i])));
 			wifiPhy[i].Set("CcaEdThreshold", DoubleValue(std::get<0>(defaultConf[i])));
 			wifiPhy[i].Set("TxPowerStart", DoubleValue(std::get<1>(defaultConf[i])));
 			wifiPhy[i].Set("TxPowerEnd", DoubleValue(std::get<1>(defaultConf[i])));
@@ -75,7 +75,7 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 		staWifiPhy.Set("MaxSupportedTxSpatialStreams", UintegerValue(2));
 		staWifiPhy.Set("MaxSupportedRxSpatialStreams", UintegerValue(2));
 		staWifiPhy.Set("ChannelNumber", UintegerValue(channel));
-		// staWifiPhy.Set("RxSensitivity", DoubleValue(this->_defaultSensibility));
+		staWifiPhy.Set("RxSensitivity", DoubleValue(this->_defaultSensibility));
 		staWifiPhy.Set("CcaEdThreshold", DoubleValue(this->_defaultSensibility));
 
 		// Propagation model, same for everyone
@@ -693,7 +693,7 @@ void Simulation::setupNewConfiguration(NetworkConfiguration configuration) {
            txPower = std::get<1>(unclusterized[i]);
     phy->SetTxPowerEnd(txPower);
     phy->SetTxPowerStart(txPower);
-    // phy->SetRxSensitivity(sensibility);
+    phy->SetRxSensitivity(sensibility);
     phy->SetCcaEdThreshold(sensibility);
   }
 
