@@ -7,23 +7,13 @@
 #include <map>
 #include <chrono>
 
-#include "gp.h"
-#include "gp_utils.h"
-#include "my_gps.hh"
-
-#include <gsl/gsl_multimin.h>
-#include <gsl/gsl_blas.h>
-
 #include "samplers.hh"
 
 using History = std::vector<std::tuple<NetworkConfiguration, double>>;
-bool lexCompareVectors(Eigen::VectorXd v, Eigen::VectorXd w);
 class Optimizer {
 	public:
 		Optimizer(Sampler* sampler, unsigned int testPeriod = 1);
 		unsigned int getTestPeriod() const;
-		void sampleValidConfig(unsigned int nCouples, std::vector<gsl_vector*>& toFill);
-		void sampleValidConfigNoNorm(unsigned int nCouples, std::vector<gsl_vector*>& toFill);
 		virtual ~Optimizer();
 		void showDecisions() const;
 		virtual bool readyForAnother() const;
@@ -45,6 +35,20 @@ class IdleOptimizer : public Optimizer {
 		virtual NetworkConfiguration optimize();
 
 	protected:
+		NetworkConfiguration _chosen;
+};
+
+class RandomNeighborOptimizer : public Optimizer {
+	public:
+		RandomNeighborOptimizer(Sampler* sampler);
+		virtual void addToBase(NetworkConfiguration configuration, double reward, bool forward=true, std::vector<std::tuple<double, unsigned int>> individual_rewards=std::vector<std::tuple<double, unsigned int>>());
+		virtual NetworkConfiguration optimize();
+
+	protected:
+		bool _firstCollection = true;
+		bool _secondCollection = false;
+		unsigned int _n = 10;
+		unsigned int _counter = 0;
 		NetworkConfiguration _chosen;
 };
 

@@ -22,7 +22,7 @@
 
 using namespace ns3;
 
-enum Optim { IDLEOPT, EGREEDY, THOMP_GAMNORM, THOMP_NORM, MARGIN };
+enum Optim { IDLEOPT, EGREEDY, THOMP_GAMNORM, THOMP_NORM, MARGIN, RANDNEIGHBOR };
 enum Samp { UNIF, HGM, HCM };
 enum Reward { AD_HOC, CUMTP, LOGPF };
 enum Entry { DEF, DEGA };

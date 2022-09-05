@@ -32,11 +32,11 @@ help:
 
 download:
 	@echo "Downloading NS-3 version $(VERSION)"
-	wget --continue "https://www.nsnam.org/releases/ns-allinone-$(VERSION).tar.bz2" 
+	wget --continue --no-check-certificate "https://www.nsnam.org/releases/ns-allinone-$(VERSION).tar.bz2" 
 
 download-dev:
 	@echo "Downloading NS-3 dev tree"
-	wget --continue "https://gitlab.com/nsnam/ns-3-dev/-/archive/master/ns-3-dev-master.tar.gz"
+	wget --continue --no-check-certificate "https://gitlab.com/nsnam/ns-3-dev/-/archive/master/ns-3-dev-master.tar.gz"
 
 extract: download
 	@echo "Extracting NS-3 version $(VERSION)"
@@ -59,16 +59,16 @@ prepare-dev: extract-dev
 	cp -r ./scratch ./ns-3-dev-master/
 
 pybuild: pyprepare
-	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf configure --enable-examples --enable-tests
+	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf configure --enable-examples --enable-tests --disable-python
 	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf build
 
 build: prepare
-	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf configure --enable-examples --enable-tests
+	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf configure --enable-examples --enable-tests --disable-python
 	cd ns-allinone-$(VERSION)/ns-$(VERSION) && ./waf build
 	cp -r ./scratch/nsTest/topos ns-allinone-$(VERSION)/ns-$(VERSION)/build/scratch/nsTest
 
 build-dev: prepare-dev
-	cd ns-3-dev-master/ && ./waf configure --enable-examples --enable-tests
+	cd ns-3-dev-master/ && ./waf configure --enable-examples --enable-tests --disable-python
 	cd ns-3-dev-master/ && ./waf build
 
 pytest: pybuild

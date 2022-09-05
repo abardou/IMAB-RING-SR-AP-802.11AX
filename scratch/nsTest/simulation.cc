@@ -270,6 +270,7 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 			case THOMP_GAMNORM: this->_optimizer = new ThompsonGammaNormalOptimizer(sampler, 3, 0.1, 0, sId != HGM); break;
 			case THOMP_NORM: this->_optimizer = new ThompsonNormalOptimizer(sampler, 0.1); break;
 			case MARGIN: this->_optimizer = nullptr; break;
+			case RANDNEIGHBOR: this->_optimizer = new RandomNeighborOptimizer(sampler); break;
 		}
 
 		std::cout << "ns3-debug: the simulation begins" << std::endl;
@@ -376,7 +377,7 @@ void Simulation::endOfTest() {
 		else this->_ema = alpha * rew + (1 - alpha) * this->_ema;
 		this->_cumulative += rew;
 
-		// std::cout << "Reward at t = " << this->_testCounter * this->_testDuration << ": " << rew << " (Cum: " << this->_cumulative << ", EMA: " << this->_ema << ")" << std::endl << std::endl;
+		std::cout << "Reward at t = " << this->_testCounter * this->_testDuration << ": " << rew << " (Cum: " << this->_cumulative << ", EMA: " << this->_ema << ")" << std::endl << std::endl;
 
 		// Add config and reward to sampler
 		NetworkConfiguration configuration = this->_configuration;
@@ -403,10 +404,10 @@ void Simulation::endOfTest() {
 			}
 		}
 
-		// for (std::tuple<double, double> t: configuration) {
-		// 	std::cout << "(" << std::get<0>(t) << ", " << std::get<1>(t) << "), ";
-		// }
-		// std::cout << std::endl;
+		for (std::tuple<double, double> t: configuration) {
+			std::cout << "(" << std::get<0>(t) << ", " << std::get<1>(t) << "), ";
+		}
+		std::cout << std::endl;
 
 		// Set up the new configuration
 		setupNewConfiguration(configuration);

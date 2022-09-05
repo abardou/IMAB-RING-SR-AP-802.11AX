@@ -1,85 +1,6 @@
 #include "optimizers.hh"
 #include <iostream>
 
-bool lexCompareVectors(Eigen::VectorXd v, Eigen::VectorXd w) {
-  for (int i = 0; i < v.size(); ++i) {
-    if (v(i) < w(i)) return true;
-    if (v(i) > w(i)) return false;
-  }
-
-  return false;
-}
-
-Eigen::VectorXd minimize_gradient(gsl_vector* x, void* params, double (*f)(const gsl_vector *, void *), void (*df)(const gsl_vector *, void *, gsl_vector*), void (*fdf)(const gsl_vector *, void *, double*, gsl_vector*), unsigned int n_iters, double* best_value, double step_size, double tol) {
-	size_t iter = 0;
-  int status;
-
-  const gsl_multimin_fdfminimizer_type *T;
-  gsl_multimin_fdfminimizer *s;
-
-  gsl_multimin_function_fdf my_func;
-
-  my_func.n = x->size;
-  my_func.f = f;
-  my_func.df = df;
-  my_func.fdf = fdf;
-  my_func.params = params;
-
-  T = gsl_multimin_fdfminimizer_conjugate_fr;
-  s = gsl_multimin_fdfminimizer_alloc (T, x->size);
-	gsl_vector* last_safe = gsl_vector_alloc(x->size);
-
-  gsl_multimin_fdfminimizer_set (s, &my_func, x, step_size, tol);
-	gsl_vector_memcpy(last_safe, x);
-
-	// std::cout << std::endl << "START: ";
-	// for (unsigned int i = 0; i < x->size; i++) {
-	// 	std::cout << gsl_vector_get(s->x, i) << " ";
-	// }
-	// std::cout << std::endl;
-
-  do
-    {
-      iter++;
-      status = gsl_multimin_fdfminimizer_iterate (s);
-
-      if (status)
-        break;
-
-			// std::cout << iter << " || ";
-			// for (unsigned int i = 0; i < x->size; i++) {
-			// 	std::cout << gsl_vector_get(s->x, i) << " ";
-			// }
-			// std::cout << "|| " << s->f << " and " << gsl_blas_dnrm2(s->gradient) << std::endl;
-
-			if (gsl_isnan(s->f)) {
-				// std::cout << "STOP" << std::endl;
-				gsl_multimin_fdfminimizer_set (s, &my_func, last_safe, step_size, tol);
-				gsl_multimin_fdfminimizer_restart(s);
-				continue;
-			} else {
-				gsl_vector_memcpy(last_safe, s->x);
-			}
-      status = gsl_multimin_test_gradient (s->gradient, 5e-4);			
-    }
-  while (status == GSL_CONTINUE && iter < n_iters);
-
-	// std::cout << iter << std::endl;
-
-	Eigen::VectorXd xc(s->x->size);
-	for (unsigned int i = 0; i < s->x->size; i++) xc(i) = gsl_vector_get(s->x, i);
-
-	if (best_value != nullptr) {
-		*best_value = s->f;
-	}
-
-	gsl_multimin_fdfminimizer_free (s);
-	gsl_vector_free(last_safe);
-	// std::cout << "FINAL: " << xc.transpose() << " || " << *best_value << std::endl;
-
-  return xc;
-}
-
 /**
  * Build an Optimizer
  * 
@@ -103,53 +24,6 @@ void Optimizer::addToBase(NetworkConfiguration configuration, double reward, boo
 	this->_history.push_back(std::make_tuple(configuration, reward));
 	if (forward)
 		this->_sampler->addToBase(configuration, reward);
-}
-
-void Optimizer::sampleValidConfig(unsigned int nCouples, std::vector<gsl_vector*>& toFill) {
-	std::vector<double> weights(20, 0);
-	for (int i = 0; i < 20; i++) {
-		weights[i] = std::max(1, 20 - i);
-	}
-
-	std::discrete_distribution<int> discreteDist(weights.begin(), weights.end());
-	for (gsl_vector* v: toFill) {
-		int prev;
-		for (unsigned int i = 0; i < 2 * nCouples; i++) {
-			int rn;
-			if (i % 2 == 0) {
-				rn = discreteDist(this->_generator);
-				prev = rn;
-			} else {
-				rn = std::rand() % (std::max(1, 20 - prev));
-			}
-			gsl_vector_set(v, i, (rn + 0.4) / 21.0);
-		}
-	}
-}
-
-void Optimizer::sampleValidConfigNoNorm(unsigned int nCouples, std::vector<gsl_vector*>& toFill) {
-	std::vector<double> weights(20, 0);
-	for (int i = 0; i < 20; i++) {
-		weights[i] = std::max(1, 20 - i);
-	}
-
-	std::discrete_distribution<int> discreteDist(weights.begin(), weights.end());
-	for (gsl_vector* v: toFill) {
-		int prev;
-		double min;
-		for (unsigned int i = 0; i < 2 * nCouples; i++) {
-			int rn;
-			if (i % 2 == 0) {
-				rn = discreteDist(this->_generator);
-				prev = rn;
-				min = -82.0;
-			} else {
-				rn = std::rand() % (std::max(1, 20 - prev));
-				min = 1.0;
-			}
-			gsl_vector_set(v, i, round(rn + 0.4 + min));
-		}
-	}
 }
 
 bool Optimizer::readyForAnother() const { return true; }
@@ -188,6 +62,41 @@ void Optimizer::showDecisions() const {
 		std::cout << " " << counters[conf] << ",";
 	}
 	std::cout << " ]" << std::endl;
+}
+
+RandomNeighborOptimizer::RandomNeighborOptimizer(Sampler* sampler) : Optimizer(sampler) {  }
+
+void RandomNeighborOptimizer::addToBase(NetworkConfiguration configuration, double reward, bool forward, std::vector<std::tuple<double, unsigned int>> individual_rewards) {
+	Optimizer::addToBase(configuration, reward, false);
+	this->_chosen = configuration;
+}
+
+NetworkConfiguration RandomNeighborOptimizer::optimize() {
+	if (this->_firstCollection) {
+		if (this->_counter == 0) {
+			this->_chosen = (*this->_sampler)();
+		}
+	} else {
+		if (this->_counter == 0) {
+			int idx = std::uniform_int_distribution<int>(0, this->_chosen.size() - 1)(this->_generator);
+			const unsigned int idx2 = std::uniform_int_distribution<int>(0, 1)(this->_generator);
+			int sign = std::uniform_int_distribution<int>(0, 1)(this->_generator) == 0 ? -1 : 1;
+			if (idx2 == 0) {
+				std::get<0>(this->_chosen[idx]) += sign;
+			} else {
+				std::get<1>(this->_chosen[idx]) += sign;
+			}
+		}
+	}
+
+	this->_counter += 1;
+	if (this->_counter == this->_n) {
+		this->_secondCollection = !this->_secondCollection;
+		this->_firstCollection = !this->_firstCollection;
+		this->_counter = 0;
+	}
+
+	return this->_chosen;
 }
 
 /**
