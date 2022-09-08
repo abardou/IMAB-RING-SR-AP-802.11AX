@@ -142,16 +142,16 @@ void aggregateSimulationsResults(std::string path, std::string temp, unsigned in
 int main (int argc, char *argv[]) {
   std::vector<bool> uplinks = {true};
   // Number of simulations to run
-  unsigned int nSimulations = 1;
+  unsigned int nSimulations = 22;
   // Duration of a single simulation
-  double duration = 400;
+  double duration = 120;
   // Duration of a single test
   std::vector<double> testDurations({0.075});
   // std::vector<double> dists({5});
   // Optimizers to test
-  std::vector<Optim> optimizers({RANDNEIGHBOR}); // EGREEDY, THOMP_NORM, IDLEOPT, MARGIN
+  std::vector<Optim> optimizers({THOMP_GAMNORM}); // EGREEDY, THOMP_NORM, IDLEOPT, MARGIN
   // Samplers to test
-  std::vector<Samp> samplers({UNIF}); // HCM, , UNIF, HGM
+  std::vector<Samp> samplers({HCM}); // HCM, , UNIF, HGM
   // Entries
   std::vector<Entry> entries({DEGA}); // DEGA, DEF
   // Rewards to test
@@ -178,7 +178,7 @@ int main (int argc, char *argv[]) {
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   // Topos to test
   int topoIndex = -1;
-  std::vector<std::string> topos({"MER_FLOORS_CH20_S5", "C6o"}); // MER_FLOORS_BAD_DIM
+  std::vector<std::string> topos({"MER_FLOORS_CH20_S5"}); // MER_FLOORS_BAD_DIM
   for (std::string topo: topos) {
     // Default configuration
     topoIndex++;
@@ -262,7 +262,7 @@ int main (int argc, char *argv[]) {
 
                     // Build the template of the output
                     std::string traffic_type = uplink ? "BOTH" : "DOWN";
-                    std::string outputName = topo + "_" + stId + "_" + cId + "_" + eId + "_" + dId + "_" + doubleToString(duration) + "_" + oId + "_" + sId + "_" + rId + "_" + doubleToString(testDuration) + "_" + traffic_type;
+                    std::string outputName = topo + "_" + stId + "_" + cId + "_" + eId + "_" + dId + "_" + doubleToString(duration) + "_" + oId + "_" + sId + "_" + rId + "_" + doubleToString(testDuration) + "_" + traffic_type + "_MINSTREL";
                     // std::string outputName = topo + "_" + stId + deg + cId + "_" + eId + "_" + dId + "_" + doubleToString(duration) + "_0.9_" + doubleToString(testDuration);
 
                     // Log

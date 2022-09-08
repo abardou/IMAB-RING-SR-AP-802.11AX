@@ -54,7 +54,7 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 		this->_nodesAP.Create(numberOfAPs);
 		std::vector<YansWifiPhyHelper> wifiPhy(numberOfAPs); // One PHY for each AP
 		for(int i = 0; i < numberOfAPs; i++) {
-			wifiPhy[i] = YansWifiPhyHelper::Default();
+			// wifiPhy[i] = YansWifiPhyHelper::Default();
 			wifiPhy[i].Set("Antennas", UintegerValue(2));
 			// 2 spatial streams to support htMcs from 8 to 15 with short GI
 			wifiPhy[i].Set("MaxSupportedTxSpatialStreams", UintegerValue(2));
@@ -70,7 +70,7 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 		this->_nodesSta = std::vector<NodeContainer>(numberOfAPs);
 		for(int i = 0; i < numberOfAPs; i++) this->_nodesSta[i].Create(this->_associations[i].size());
 		// One phy for every station
-		YansWifiPhyHelper staWifiPhy = YansWifiPhyHelper::Default();
+		YansWifiPhyHelper staWifiPhy; // = YansWifiPhyHelper::Default();
 		staWifiPhy.Set("Antennas", UintegerValue(2));
 		staWifiPhy.Set("MaxSupportedTxSpatialStreams", UintegerValue(2));
 		staWifiPhy.Set("MaxSupportedRxSpatialStreams", UintegerValue(2));
@@ -89,9 +89,9 @@ Simulation::Simulation(Optim oId, Samp sId, Reward r, Entry e, DistanceMode dmod
 
 		// 802.11ax protocol
 		WifiHelper wifi;
-		wifi.SetStandard (WIFI_PHY_STANDARD_80211ax_5GHZ);
+		wifi.SetStandard (WIFI_STANDARD_80211ax_5GHZ );
 		// TOCHANGE, Vht pour ax (0 pour le contrôle, à fixer pour les données)
-		wifi.SetRemoteStationManager("ns3::IdealWifiManager"); // Minstrel ARF AARF // wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", StringValue ("HeMcs4"), "ControlMode", StringValue ("HeMcs0"));
+		wifi.SetRemoteStationManager("ns3::MinstrelHtWifiManager"); // Minstrel ARF AARF // wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", StringValue ("HeMcs4"), "ControlMode", StringValue ("HeMcs0"));
 
 
 		// Configure Infrastructure mode and SSID
