@@ -377,7 +377,7 @@ void Simulation::endOfTest() {
 		else this->_ema = alpha * rew + (1 - alpha) * this->_ema;
 		this->_cumulative += rew;
 
-		std::cout << "Reward at t = " << this->_testCounter * this->_testDuration << ": " << rew << " (Cum: " << this->_cumulative << ", EMA: " << this->_ema << ")" << std::endl << std::endl;
+		// std::cout << "Reward at t = " << this->_testCounter * this->_testDuration << ": " << rew << " (Cum: " << this->_cumulative << ", EMA: " << this->_ema << ")" << std::endl << std::endl;
 
 		// Add config and reward to sampler
 		NetworkConfiguration configuration = this->_configuration;
@@ -404,10 +404,10 @@ void Simulation::endOfTest() {
 			}
 		}
 
-		for (std::tuple<double, double> t: configuration) {
-			std::cout << "(" << std::get<0>(t) << ", " << std::get<1>(t) << "), ";
-		}
-		std::cout << std::endl;
+		// for (std::tuple<double, double> t: configuration) {
+		// 	std::cout << "(" << std::get<0>(t) << ", " << std::get<1>(t) << "), ";
+		// }
+		// std::cout << std::endl;
 
 		// Set up the new configuration
 		setupNewConfiguration(configuration);

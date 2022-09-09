@@ -149,11 +149,11 @@ int main (int argc, char *argv[]) {
   std::vector<double> testDurations({0.075});
   // std::vector<double> dists({5});
   // Optimizers to test
-  std::vector<Optim> optimizers({THOMP_GAMNORM}); // EGREEDY, THOMP_NORM, IDLEOPT, MARGIN
+  std::vector<Optim> optimizers({EGREEDY, THOMP_NORM, IDLEOPT, MARGIN, THOMP_GAMNORM}); // EGREEDY, THOMP_NORM, IDLEOPT, MARGIN
   // Samplers to test
-  std::vector<Samp> samplers({HCM}); // HCM, , UNIF, HGM
+  std::vector<Samp> samplers({UNIF, HGM, HCM}); // HCM, , UNIF, HGM
   // Entries
-  std::vector<Entry> entries({DEGA}); // DEGA, DEF
+  std::vector<Entry> entries({DEF, DEGA}); // DEGA, DEF
   // Rewards to test
   std::vector<Reward> rewards({AD_HOC});
   // Distance mode to test
@@ -178,7 +178,7 @@ int main (int argc, char *argv[]) {
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   // Topos to test
   int topoIndex = -1;
-  std::vector<std::string> topos({"MER_FLOORS_CH20_S5"}); // MER_FLOORS_BAD_DIM
+  std::vector<std::string> topos({"C6o", "MER_FLOORS_CH20_S5"}); // MER_FLOORS_BAD_DIM
   for (std::string topo: topos) {
     // Default configuration
     topoIndex++;
